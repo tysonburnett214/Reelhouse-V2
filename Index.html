@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#120a14">
+<title>Reelhouse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" 
+href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+  /* Layout: single-column phone app. Sticky masthead, a resume tile, then a two-column poster grid.
+     Committed to one dark "theatre" look, so no light variant. */
+  :root {
+    --ink: #120a14;
+    --panel: #1d1320;
+    --line: #34253a;
+    --text: #f5eee3;
+    --muted: #a995ad;
+    --bulb: #f4b942;
+    --oxblood: #b3263e;
+    --font-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+    --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--ink); }
+  body {
+    margin: 0; color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.4;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 48px; min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--ink); }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--bulb); outline-offset: 2px; }
+
+  .mast { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--ink);
+          display: flex; align-items: center; gap: 12px; padding-block: 14px 12px; border-bottom: 1px solid var(--line); }
+  .logo { font-family: 
+var(--font-display); font-weight: 800; font-size: 30px; letter-spacing: .06em; text-transform: uppercase; color: var(--bulb); line-height: 1; margin-right: auto; }
+  .btn { min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-primary { background: var(--bulb); color: #1a1108; }
+  .btn-quiet { background: var(--panel); border: 1px solid var(--line); }
+
+  .empty { padding-block: 12vh 0; display: grid; gap: 20px; justify-items: start; }
+  .empty h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(48px, 16vw, 84px); line-height: .92; margin: 0; text-transform: uppercase; text-wrap: balance; }
+  .empty p { color: var(--muted); margin: 0; max-width: 34ch; font-size: 16px; }
+  .empty .btn { min-height: 56px; font-size: 17px; padding: 0 26px; }
+  .fine { font-size: 13px; color: var(--muted); max-width: 40ch; }
+
+  .search { width: 100%; min-height: 44px; margin-top: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 0 14px; font: inherit; }
+  .search::placeholder { color: var(--muted); }
+
+  h2.label { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 
+26px 0 12px; display: flex; align-items: baseline; gap: 10px; }
+  h2.label small { font-family: var(--font-body); font-size: 12px; letter-spacing: 0; font-weight: 500; }
+
+  .resume { display: grid; gap: 12px; }
+  .strip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 6px; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); 
+padding-inline: max(16px, env(safe-area-inset-left, 0px)); scrollbar-width: none; }
+  .strip::-webkit-scrollbar { display: none; }
+  .strip .card { flex: 0 0 72%; max-width: 320px; scroll-snap-align: start; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); } }
+
+  .card { position: relative; text-align: left; background: none; padding: 0; min-width: 0; display: block; width: 100%; }
+  .thumb { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #2a1c30, #170f1b); background-size: cover; background-position: center; display: grid; place-items: center; border: 1px solid var(--line); }
+  .thumb .fmt { font-family: var(--font-display); font-weight: 700; font-size: 22px; 
+letter-spacing: .12em; color: #5d4a66; }
+  .thumb .dur { position: absolute; right: 6px; bottom: 8px; background: #000b; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: #ffffff30; }
+  .bar i { display: block; height: 100%; background: var(--oxblood); }
+  .meta { padding-top: 7px; min-width: 0; }
+  .meta .t { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta .s { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .none { color: var(--muted); padding-block: 24px; }
+
+  .editing .thumb::after { content: "Remove"; position: absolute; inset: 0; display: grid; place-items: center; background: #120a14cc; font-weight: 700; color: var(--text); }
+  .card[data-armed] .thumb
+::after { content: "Tap again to remove"; background: #b3263ee6; text-align: center; padding: 0 8px; }
+
+  /* player */
+  .player { position: fixed; inset: 0; z-index: 100; background: #000; }
+  .player video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+  .ptop { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; gap: 12px;
+          padding: calc(10px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 24px max(14px, env(safe-area-inset-left, 0px));
+          background: linear-gradient(#000d, #0000); transition: opacity .25s; }
+  .ptop.off { opacity: 0; pointer-events: none; }
+  .ptop .btn { background: #ffffff26; min-height: 44px; }
+  .ptitle { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .zone { position: absolute; top: 18%; bottom: 96px; width: 38%; z-index: 2; }
+  .zone.l { left: 0; } .zone.r { right: 0; }
+  .zone.c { left: 38%; width: 24%; }
+  .toast { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); z-index: 4; background: #000c; padding: 8px 16px; border-radius: 999px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; text-align: center; max-width: 86%; }
+  .toast.on { opacity: 1; }
+  .status { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--panel); border: 1px solid var(--line); padding: 8px 16px; border-radius: 999px; font-size: 13px; z-index: 40; white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="mast">
+  <div class="logo">Reelhouse</div>
+  <button class="btn btn-quiet" id="editBtn" type="button" hidden>Edit</button>
+  <button class="btn btn-primary" id="addBtn" type="button" hidden>+ Add</button>
+</header>
+
+<section class="empty" id="empty">
+  <h1>Your files.<br>Your cinema.</h1>
+  <p>Add your videos once and they stay in Reelhouse. Next 
+time you open it, your library is already here, with posters, resume and subtitles. Nothing is uploaded anywhere.</p>
+  <button class="btn btn-primary" id="pickBtn" type="button">Choose videos</button>
+  <p class="fine">Reelhouse keeps its own copy on this phone, so you can delete the originals afterwards to free space. Select many videos at once, and include matching .srt or .vtt files for subtitles. Clearing Chrome's site data also clears the library.</p>
+</section>
+
+<main id="library" hidden>
+  <input class="search" id="search" type="search" placeholder="Search your videos" aria-label="Search your videos" autocomplete="off">
+  <div id="content"></div>
+  <p class="fine" id="store" style="margin-top:28px"></p>
+</main>
+
+<input id="fileInput" type="file" multiple accept="video/*,.mkv,.avi,.srt,.vtt" hidden>
+
+<div class="player" id="player" hidden>
+  <video id="video" controls playsinline></video>
+  <div class="zone l" id="zl"></div>
+  <div class="zone c" id="zc"></div>
+  <div class="zone r" id="zr"></div>
+  <div class="ptop" id="ptop"><button class="btn" id="closeBtn" type="button">← Back</button><div class="ptitle" id="ptitle"></div></div>
+  <div class="toast" id="toast" role="status"></div>
+</div>
+<div class="status" id="status" hidden></div>
+
+<script>
+(function () {
+  var VIDEO_EXT = ["mp4","m4v","webm","mov","mkv","ogv","avi","mpg","mpeg","3gp","ts"];
+  var SUB_EXT = ["srt","vtt"];
+  var $ = function (s) { return document.querySelector(s); };
+  var items = [], subs = [];
+  var PKEY = "reelhouse-phone-progress-v1";
+  var progress = {};
+  try { progress = JSON.parse(l
+ocalStorage.getItem(PKEY) || "{}"); } catch (e) {}
+  function saveProgress() { try { localStorage.setItem(PKEY, JSON.stringify(progress)); } catch (e) {} }
+  function keyOf(f) { return f.name + "|" + f.size; }
+  function ext(n) { return (n.split(".").pop() || "").toLowerCase(); }
+  function base(n) { return n.replace(/\.[^.]+$/, ""); }
+  function fmtSize(b) { return b > 1e9 ? (b / 1e9).toFixed(1) + " GB" : Math.max(1, Math.round(b / 1e6)) + " MB"; }
+  function fmtDur(s) { s = Math.floor(s); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(x).padStart(2, "0"); }
+  function fmtLeft(s) { s = Math.floor(s); var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? h + "h " + m + "m" : m + "m"; }
+
+  function cleanTitle(name) {
+    var s = base(name).replace(/[._]+/g, " "), year = null;
+    var m = s.match(/[\(\[]?
+\b((?:19|20)\d{2})\b[\)\]]?/);
+    if (m && m.index > 0) { year = m[1]; s = s.slice(0, m.index); }
+    s = s.replace(/\b(2160p|1080p|720p|480p|4k|uhd|bluray|brrip|bdrip|webrip|web-dl|hdrip|dvdrip|x264|x265|h264|h265|hevc|aac|ac3|hdr|remux)\b.*$/i, "");
+    s = s.replace(/[\-\s\(\[]+$/g, "").replace(/\s+/g, " ").trim();
+    return { title: s || base(name), year: year };
+  }
+
+  var statusTimer;
+  function status(msg, ms) {
+    var el = $("#status"); el.textContent = msg; el.hidden = !msg;
+    clearTimeout(statusTimer); if (msg && ms) statusTimer = setTimeout(function () { el.hidden = true; }, ms);
+  }
+
+  /* ---------- adding files ---------- */
+  function addFiles(list, persistIt) {
+    var added = [], nextId = items.length;
+    Array.prototype.forEach.call(list, function (f) {
+      var x = ext(f.name);
+      if (SUB_EXT.indexOf(x) > -1) {
+        if (!subs.some(function (s) { return keyOf(s) === keyOf(f); })) { subs.push(f); added.push(f); }
+        return;
+      }
+      if (VIDEO_EXT.indexOf(x) === -1 && f.type.indexOf("video/") !== 0) return;
+      if (items.some(function (i) { return keyOf(i.file) === keyOf(f); })) return;
+      var t = cleanTitle(f.name);
+      items.push({ id: nextId++, title: t.title, year: t.year, 
+file: f, size: f.size, mtime: f.lastModified, dur: null, subs: [] });
+      added.push(f);
+    });
+    items.forEach(function (it) {
+      var stem = base(it.file.name).toLowerCase();
+      it.subs = subs.filter(function (s) { return base(s.name).toLowerCase().indexOf(stem) === 0; });
+    });
+    items.sort(function (a, b) { return a.title.localeCompare(b.title, undefined, { numeric: true }); });
+    if (!items.length) { status("No videos in that selection.", 2500); return; }
+    $("#empty").hidden = true; $("#library").hidden = false; $("#addBtn").hidden = false; $("#editBtn").hidden = false;
+    render();
+    if (persistIt) {
+      if (added.length) saveAll(added); else status("Already in your library.", 2200);
+    }
+    storageNote();
+  }
+  function openPicker() { $
+("#fileInput").click(); }
+  $("#pickBtn").onclick = openPicker;
+  $("#addBtn").onclick = openPicker;
+  $("#fileInput").onchange = function (e) { addFiles(e.target.files, true); e.target.value = ""; };
+
+  /* ---------- rendering ---------- */
+  function pctOf(it) { var p = progress[keyOf(it.file)]; return p && p.d ? p.t / p.d : 0; }
+  function card(it) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "card";
+    var p = progress[keyOf(it.file)], pct = pctOf(it);
+    var sub = (it.year ? it.year + " · " : "") + fmtSize(it.size);
+    if (p && pct > 0.02 && pct < 0.95) sub = fmtLeft(p.d - p.t) + " left";
+    b.innerHTML = '<div class="thumb"><span class="fmt"></span></div><div class="meta"><div class="t"></div><div class="s"></div></div>';
+    b.querySelector(".fmt").textContent = ext(it.file.name).toUpperCase();
+    b.querySelector(".t").textContent = it.title;
+    b.querySelector(".s").textContent = sub;
+    if (pct > 0.02 && pct < 0.95) b.querySelector(".thumb").insertAdjacentHTML("beforeend", '<div class="bar"><i style="width:' + Math.min(100, pct * 100) + '%"></i></div>');
+    b.onclick = function () {
+      if (editing) {
+        if (b.dataset.armed) removeItem(it); else { clearArmed(); b.dataset.armed 
+= "1"; }
+        return;
+      }
+      play(it);
+    };
+    requestThumb(it, function (url, dur) {
+      var t = b.querySelector(".thumb");
+      t.style.backgroundImage = "url(" + url + ")";
+      var f = t.querySelector(".fmt"); if (f) f.remove();
+      if (dur && !t.querySelector(".dur")) { var d = document.createElement(
+"span"); d.className = "dur"; d.textContent = fmtDur(dur); t.appendChild(d); }
+    });
+    return b;
+  }
+  function section(title, list, cls, count) {
+    var wrap = document.createDocumentFragment();
+    var h = document.createElement("h2"); h.className = "label";
+    h.textContent = title;
+    if (count) { var s = document.createElement("small"); s.textContent = list.length; 
+h.appendChild(s); }
+    wrap.appendChild(h);
+    var box = document.createElement("div"); box.className = cls;
+    list.forEach(function (it) { box.appendChild(card(it)); });
+    wrap.appendChild(box);
+    return wrap;
+  }
+  function render() {
+    var c = $("#content"); c.innerHTML = "";
+    var q = $("#search").value.trim().toLowerCase();
+    if (q) {
+      var found = 
+items.filter(function (i) { return (i.title + " " + i.file.name).toLowerCase().indexOf(q) > -1; });
+      if (!found.length) { c.innerHTML = '<p class="none"></p>'; c.firstChild.textContent = "Nothing matches “" + q + "”."; return; }
+      c.appendChild(section("Results", found, "grid", true)); return;
+    }
+    var cont = items.filter(function (i) { var p = pctOf(i); return p > 0.02 && p < 0.95; })
+      .sort(function (a, b) { return progress[keyOf(b.file)].ts - progress[keyOf(a.file)].ts; });
+    if (cont.length) c.appendChild(section("Continue watching", cont, "strip"));
+    c.appendChild(section("All videos", items, "grid", true));
+  }
+  $("#search").addEventListener("input", render);
+
+  /* ---------- saved library (IndexedDB, survives closing the app) ---------- */
+  var editing = false, dbp = null;
+  function db() {
+    if (!dbp) dbp = new Promise(function (res, rej) {
+      var r = indexedDB.open("reelhouse-library", 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore("files", { keyPath: "key" }); };
+      r.onsuccess = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+    });
+    return dbp;
+  }
+  function dbPut(f) {
+    return db().then(function (d) {
+      return new Promise(function (res, rej) {
+        var tx = d.transaction("files", "readwrite");
+        tx.objectStore("files").put({ key: keyOf(f), name: f.name, size: f.size, type: f.type, mtime: f.lastModified, blob: f });
+        tx.oncomplete = res; tx.onerror = function () { rej(tx.error); }; tx.onabort = function () { rej(tx.error); };
+      });
+    });
+  }
+  function dbDel(f) {
+    return db().then(function (d) {
+      return new Promise(function (res) {
+        var tx = d.transaction("files", "readwrite");
+        tx.objectStore("files").delete(keyOf(f));
+        tx.oncomplete = res; tx.onerror = res;
+      });
+    });
+  }
+  function dbAll() {
+    return db().then(function (d) {
+      return new Promise(function 
+(res, rej) {
+        var r = d.transaction("files").objectStore("files").getAll();
+        r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); };
+      });
+    });
+  }
+  function saveAll(files) {
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    var i = 0;
+    (function next() {
+      if (i >= files.length) 
+{ status("Saved. They will be here next time.", 2800); storageNote(); return; }
+      status("Saving " + (i + 1) + " of " + files.length + "…");
+      dbPut(files[i++]).then(next, function () { status("Could not save. Is the phone low on space?", 5000); });
+    })();
+  }
+  function storageNote() {
+    var el = $("#store");
+    if (!el || !navigator.storage || !navigator.storage.estimate) return;
+    navigator.storage.esti
+mate().then(function (e) {
+      el.textContent = "Reelhouse is using " + fmtSize(e.usage || 0) + " on this phone, with about " + fmtSize(Math.max(0, (e.quota || 0) - (e.usage || 0))) + " available to it.";
+    }).catch(function () {});
+  }
+  function clearArmed() { Array.prototype.forEach.call(document.querySelectorAll(".card[data-armed]"), function (c) { delete c.dataset.armed; }); }
+  function removeItem(it) {
+    items = items.filter(function (i) 
+{ return i !== it; });
+    dbDel(it.file);
+    it.subs.forEach(function (s) {
+      var stillUsed = items.some(function (o) { return o.subs.indexOf(s) > -1; });
+      if (!stillUsed) { subs = subs.filter(function (x) { return x !== s; }); dbDel(s); }
+    });
+    status("Removed from Reelhouse. The original file is untouched.", 3000);
+    if (!items.length) {
+      editing = false; document.body.classList.remove("editing"); $("#editBtn").textContent = "Edit";
+      $("#library").hidden = true; $("#empty").hidden = false; $("#addBtn").hidden = true; $("#editBtn").hidden = true;
+    } else render();
+    storageNote();
+  }
+  $("#editBtn").onclick = function () {
+    editing = !editing; clearArmed();
+    document.body.classList.toggle("editing", editing);
+    this.textContent = editing ? "Done" : "Edit";
+  };
+
+  /* ---------- thumbnails (one at a time, kind to phone memory) ---------- */
+  var queue = [], busy = false, cache = {};
+  function requestThumb(it, cb) {
+    if (cache[it.id]) return cb(cache[it.id].url, cache[it.id].dur);
+    queue.push({ it: it, cb: cb }); pump();
+  }
+  function pump() {
+    if (busy) return; busy = true;
+    (function next() {
+      var job = queue.shift();
+      if (!job) { busy = false; return; }
+      if (cache[job.it.id]) { job.cb(cache[job.it.id].url, cache[job.it.id].dur); return next(); }
+      grab(job.it.file).then(function (r) { cache[job.it.id] = r; job.cb(r.url, r.dur); }).catch(function () {}).then(next);
+    })();
+  }
+  function grab(file) {
+    return new Promise(function (res, rej) {
+      var v = document.cre
+ateElement("video"), u = URL.createObjectURL(file);
+      v.muted = true; v.preload = "metadata"; v.playsInline = true; v.src = u;
+      var fin = function (ok, val) { clearTimeout(timer); URL.revokeObjectURL(u); v.removeAttribute("src"); v.load(); ok ? res(val) : rej(val); };
+      var timer = setTimeout(function () { fin(false, "timeout"); }, 9000);
+      v.onerror = function () { fin(false, "err"); };
+      v.onloadedmetadata = function () { v.currentTime = 
+Math.min(Math.max(v.duration * 0.12, 1), 90) || 1; };
+      v.onseeked = function () {
+        var c = document.createElement("canvas"), w = 360;
+        c.width = w; c.height = Math.round(w * ((v.videoHeight / v.videoWidth) || 9 / 16));
+        c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+        fin(true, { url: c.toDataURL("image/jpeg", 0.7), dur: v.duration });
+      };
+    });
+  }
+
+  /* ---------- player ---------- */
+  var video = $("#video"), current = null, curUrl = null, subUrls = [], hideT, wake = null;
+  function srtToVtt(t) { return "WEBVTT\n\n" + t.replace(/\r/g, "").replace(/(\d+:\d+:\d+),(\d+)/g, "$1.$2"); }
+  function toast(msg, ms) { var t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove("on"); }, ms 
+|| 900); }
+  function showTop() { var p = $("#ptop"); p.classList.remove("off"); clearTimeout(hideT); hideT = setTimeout(function () { if (!video.paused) p.classList.add("off"); }, 2800); }
+  async function lockScreen() { try { if (navigator.wakeLock) wake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+  function unlockScreen() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
+
+  async function play(it) {
+    current = it;
+    $("#ptitle").textContent = it.title + (it.year ? " (" + it.year + ")" : "");
+    $("#player").hidden = false; document.body.style.overflow = "hidden";
+    video.innerHTML = "";
+    curUrl = URL.createObjectURL(it.file); video.src = curUrl;
+    for (var i = 0; i < it.subs.length; i++) {
+      var s = it.subs[i], text = await s.text();
+      var u = 
+URL.createObjectURL(new Blob([ext(s.name) === "srt" ? srtToVtt(text) : text], { type: "text/vtt" }));
+      subUrls.push(u);
+      var tr = document.createElement("track");
+      tr.kind = "subtitles"; tr.label = base(s.name); tr.src = u; if (i === 0) tr.default = true;
+      video.appendChild(tr);
+    }
+    var p = progress[keyOf(it.file)];
+    video.onloadedmetadata = function () { if (p && p.t > 10 && p.t < video.duration 
+- 30) { video.currentTime = p.t; toast("Resuming at " + fmtDur(p.t), 1600); } };
+    video.onerror = function () { toast("This phone can't decode that file. MP4 (H.264) and WebM work best; MKV often fails.", 6000); };
+    video.play().catch(function () {});
+    lockScreen(); showTop();
+    if (location.hash !== "#watching") location.hash = "watching";
+  }
+  function persist() {
+    if (!current || !video.duration) 
+return;
+    var k = keyOf(current.file);
+    if (video.currentTime / video.duration > 0.95) delete progress[k];
+    else progress[k] = { t: video.currentTime, d: video.duration, ts: Date.now() };
+    saveProgress();
+  }
+  function closePlayer() {
+    if (!current) return;
+    persist();
+    video.pause(); video.removeAttribute("src"); video.load();
+    if (curUrl) 
+URL.revokeObjectURL(curUrl);
+    subUrls.forEach(URL.revokeObjectURL); subUrls = [];
+    $("#player").hidden = true; document.body.style.overflow = "";
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    unlockScreen(); current = null; render();
+  }
+  $("#closeBtn").onclick = function () { if (location.hash === "#watching") history.back(); else 
+closePlayer(); };
+  addEventListener("hashchange", function () { if (location.hash !== "#watching") closePlayer(); });
+  addEventListener("pagehide", persist);
+  document.addEventListener("visibilitychange", function () { if (document.hidden) persist(); else if (current && !video.paused) lockScreen(); });
+  setInterval(function () { if (current && !video.paused) persist(); }, 5000);
+  video.addEventListener("play", showTop); 
+video.addEventListener("pause", function () { $("#ptop").classList.remove("off"); });
+
+  /* tap zones: double-tap sides to skip 10s, tap middle or once to show/hide, middle toggles play */
+  function seek(d) { video.currentTime = Math.max(0, Math.min(video.duration || 1e9, video.currentTime + d)); toast((d > 0 ? "+" : "") + d + " s"); }
+  function zone(el, onDouble, onSingle) {
+    var last = 0, timer;
+    el.addEventListener("click", 
+function () {
+      var now = Date.now();
+      if (now - last < 320) { clearTimeout(timer); last = 0; onDouble(); }
+      else { last = now; timer = setTimeout(onSingle, 330); }
+    });
+  }
+  zone($("#zl"), function () { seek(-10); showTop(); }, function () { $("#ptop").classList.toggle("off"); });
+  zone($("#zr"), function () { seek(10); showTop(); }, function () { $("#ptop").classList.toggle("off"); });
+  zone($("#zc"), function () { try { $("#player").requestFullscreen(); } catch (e) {} }, function () { video.paused ? video.play() : video.pause(); showTop(); });
+
+  /* reload whatever was saved last time */
+  db().then(dbAll).then(function (rows) {
+    if (!rows || !rows.length) return;
+    var files = rows.map(function (r) { return new File([r.blob], r.name, { type: r.type, lastModified: r.mtime }); });
+    addFiles(files, false);
+  }).catch(function () {});
+})();
+</script>
+
+</body>
+</html>
